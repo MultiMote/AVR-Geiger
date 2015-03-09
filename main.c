@@ -7,15 +7,14 @@ void beep(int freq) {
 }
 
 uint32_t convertCPM(uint32_t clicks) {
-    return (uint32_t)(clicks * SBM20_CONV_FACTOR * 100);
+    return (uint32_t) (clicks * SBM20_CONV_FACTOR * 100);
 }
 
 
 //***********************************************************
 // ÏÐÅÐÛÂÀÍÈß
 //***********************************************************
-ISR(TIMER2_OVF_vect){
-    PIN_SET(LED_PORT, LED_PIN, halfSecond);
+ISR(TIMER2_OVF_vect) {
     halfSecond = !halfSecond;
     if (!halfSecond) seconds++;
     halfSeconds++;
@@ -26,7 +25,6 @@ ISR(TIMER2_OVF_vect){
     }
     onHalfSecond();
 }
-
 
 
 ISR(TIMER1_COMPA_vect) {
@@ -43,27 +41,28 @@ int max = 200;
 
 void onHalfSecond() {
 
-    if(seconds - measureTimeStart >= time){
+    if (seconds - measureTimeStart >= time) {
         measureTimeStart = seconds;
         ticks = 0;
         lastMeasure = measure;
     }
 
-    if(measure >= max || lastMeasure >= max) alarm = true;
-                                        else alarm = false;
+    if (measure >= max || lastMeasure >= max) alarm = true;
+    else alarm = false;
 
     measure = convertCPM(ticks * 4);
 
-    if(alarm){
-        if(halfSecond){
+    if (alarm) {
+        PIN_SET(LED_PORT, LED_PIN, halfSecond);
+        if (halfSecond) {
             timer1Tone(ALARM_TONE_1);
             _alarm = true;
-        }else{
+        } else {
             timer1Tone(ALARM_TONE_2);
             _alarm = true;
         }
     } else {
-        if(_alarm){
+        if (_alarm) {
             timer1off();
         }
     }
@@ -71,7 +70,7 @@ void onHalfSecond() {
 }
 
 void drawBackground() {
-  //  uint8_t RAMbyte = eeprom_read_word(&eeprombyte);
+    //  uint8_t RAMbyte = eeprom_read_word(&eeprombyte);
 
     sprintf(buf, "%04u", measure);
     LcdGotoXYFont(1, 3);
@@ -136,6 +135,8 @@ void globalInit() {
     initTimer2();
     initInterrupts();
     LcdContrast(0x37);
+    _delay_ms(20);
+    readCfg();
     sei();
 }
 
@@ -150,7 +151,17 @@ int main(void) {
 
         if (ticksPrev != ticks) {
             ticksPrev = ticks;
-            if(!alarm)beep(DEFAULT_BEEP_FREQ);
+            if (!alarm) {
+                if (CFG_SOUND) {
+                    if (CFG_LED) PIN_ON(LED_PORT, LED_PIN);
+                    beep(DEFAULT_BEEP_FREQ);
+                    if (CFG_LED) PIN_OFF(LED_PORT, LED_PIN);
+                } else if (CFG_LED) {
+                    PIN_ON(LED_PORT, LED_PIN);
+                    _delay_ms(3);
+                    PIN_OFF(LED_PORT, LED_PIN);
+                }
+            }
         }
     }
 }

@@ -15,6 +15,7 @@
 #include "defines.h"
 #include "icons.h"
 #include "init.h"
+#include "config.h"
 
 char buf[16];
 uint16_t seconds;
@@ -33,7 +34,6 @@ bool halfSecond;
 bool alarm;
 bool _alarm;
 
-uint8_t EEMEM measureTime=15;
 
 void globalInit();
 void repaint();

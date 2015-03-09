@@ -30,6 +30,7 @@ SET(SOURCE_FILES
         defines.h
         icons.h
         init.c
+        config.c
 
    )
 
