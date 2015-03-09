@@ -97,13 +97,13 @@ void drawForeground() {
     LCDIcon(&display_icon[0][0], 35, 1, 2, 9, true);
     LCDIcon(&alarm_icon[0][0], 51, 3, 1, 7, true);
 
-    /*  if (halfSecond)LCDIcon(&highlight[0][0], 1, 0, 1, 11, true);  // индикатор
-      if (halfSecond)LCDIcon(&highlight[0][0], 32, 2, 1, 11, true); // подсветка дисплея
-      if (halfSecond)LCDIcon(&highlight[0][0], 49, 0, 1, 11, true); // сигнал
+    if (CFG_LED)LCDIcon(&highlight[0][0], 1, 0, 1, 11, true);  // индикатор
+    if (CFG_BACKLIGHT)LCDIcon(&highlight[0][0], 32, 2, 1, 11, true); // подсветка дисплея
+    if (CFG_ALARM)LCDIcon(&highlight[0][0], 49, 0, 1, 11, true); // сигнал
 
 
-      if (halfSecond)LCDIcon(&loud[0][0], 23, 3, 1, 8, true);
-      else LCDIcon(&mute[0][0], 23, 4, 1, 4, true);*/
+    if (CFG_SOUND)LCDIcon(&loud[0][0], 23, 3, 1, 8, true);
+    else LCDIcon(&mute[0][0], 23, 4, 1, 4, true);
 
 
     uint8_t sec = halfSeconds + 1;
