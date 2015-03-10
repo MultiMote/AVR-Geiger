@@ -36,21 +36,39 @@ ISR(INT0_vect) {
 }
 //***********************************************************
 
-int time = 20;
+void pushToStream(uint16_t clicks){
+    int i;
+    for (i = 0; i < DEFAULT_MEASURE_TIME - 1; i++) {
+        clicksStream[i] = clicksStream[i + 1];
+    }
+    clicksStream[DEFAULT_MEASURE_TIME - 1] = clicks;
+}
+
 int max = 200;
 
 void onHalfSecond() {
 
-    if (seconds - measureTimeStart >= time) {
+    if(halfSecond){
+        pushToStream(ticks - ticksMeasure);
+        ticksMeasure = ticks;
+    }
+
+    if (seconds - measureTimeStart >= DEFAULT_MEASURE_TIME) {
         measureTimeStart = seconds;
-        ticks = 0;
+       // ticks = 0;
         lastMeasure = measure;
     }
 
     if (measure >= max || lastMeasure >= max) alarm = true;
     else alarm = false;
 
-    measure = convertCPM(ticks * 4);
+    uint16_t t = 0;
+    int i;
+    for (i = 0; i < DEFAULT_MEASURE_TIME; i++) {
+        t += clicksStream[i];
+    }
+
+    measure = convertCPM(t * 3);
 
     if (alarm) {
         PIN_SET(LED_PORT, LED_PIN, halfSecond);
@@ -70,8 +88,6 @@ void onHalfSecond() {
 }
 
 void drawBackground() {
-    //  uint8_t RAMbyte = eeprom_read_word(&eeprombyte);
-
     sprintf(buf, "%04u", measure);
     LcdGotoXYFont(1, 3);
     LcdStr(FONT_2X, buf, 6);

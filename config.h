@@ -2,6 +2,7 @@
 #define __CONFIG_H_
 #include <avr/eeprom.h>
 #include <stdbool.h>
+#include "defines.h"
 
 uint8_t CFG_MEASURE_TIME;
 uint8_t CFG_CONTRAST;

@@ -24,6 +24,7 @@ uint16_t minutes;
 uint16_t lastRepaintTime;
 
 uint32_t ticks;
+uint32_t ticksMeasure;
 uint32_t ticksPrev;
 
 uint32_t measure;
@@ -34,6 +35,7 @@ bool halfSecond;
 bool alarm;
 bool _alarm;
 
+uint16_t clicksStream[DEFAULT_MEASURE_TIME];
 
 void globalInit();
 void repaint();
@@ -41,6 +43,7 @@ void onHalfSecond();
 void drawForeground();
 void drawBackground();
 void beep(int freq);
+void pushToStream(uint16_t clicks);
 int main(void);
 
 uint32_t convertCPM(uint32_t clicks);

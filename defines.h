@@ -35,7 +35,7 @@
 
 
 #define SBM20_CONV_FACTOR 0.0057
-#define DEFAULT_CONTRAST 0x37
+#define DEFAULT_CONTRAST 0x3C
 
 #define DEFAULT_BEEP_FREQ 3980
 
@@ -44,6 +44,7 @@
 
 
 #define BEEP_LEN 10
+#define DEFAULT_MEASURE_TIME 20
 #define IDLE_REPAINT_HALFSECONDS 1
 
 #define MKR_H "לך׀/ק"
