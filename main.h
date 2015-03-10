@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <avr/interrupt.h>
-#include <string.h>
 
 #include "n3310.h"
 #include "easyavr.h"
@@ -16,6 +15,7 @@
 #include "icons.h"
 #include "init.h"
 #include "config.h"
+
 
 char buf[16];
 uint16_t seconds;
@@ -25,17 +25,20 @@ uint16_t lastRepaintTime;
 
 uint32_t ticks;
 uint32_t ticksMeasure;
+uint32_t ticksTimeMeasure;
 uint32_t ticksPrev;
 
-uint32_t measure;
+uint32_t measureByStream;
+uint32_t measureByTime;
 uint32_t lastMeasure;
 uint32_t measureTimeStart;
 
 bool halfSecond;
 bool alarm;
 bool _alarm;
+bool measureFinished;
 
-uint16_t clicksStream[DEFAULT_MEASURE_TIME];
+uint16_t clicksStream[MEASURE_STREAM_SIZE];
 
 void globalInit();
 void repaint();

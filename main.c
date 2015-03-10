@@ -36,51 +36,54 @@ ISR(INT0_vect) {
 }
 //***********************************************************
 
-void pushToStream(uint16_t clicks){
+void pushToStream(uint16_t clicks) {
     int i;
-    for (i = 0; i < DEFAULT_MEASURE_TIME - 1; i++) {
+    for (i = 0; i < MEASURE_STREAM_SIZE - 1; i++) {
         clicksStream[i] = clicksStream[i + 1];
     }
-    clicksStream[DEFAULT_MEASURE_TIME - 1] = clicks;
+    clicksStream[MEASURE_STREAM_SIZE - 1] = clicks;
 }
 
-int max = 200;
 
 void onHalfSecond() {
 
-    if(halfSecond){
+    if (halfSecond) {
         pushToStream(ticks - ticksMeasure);
         ticksMeasure = ticks;
     }
 
+    measureByTime = convertCPM((uint32_t) ((float) (ticks - ticksTimeMeasure) * (60.0F / (float) CFG_MEASURE_TIME)));
+
     if (seconds - measureTimeStart >= DEFAULT_MEASURE_TIME) {
         measureTimeStart = seconds;
-       // ticks = 0;
-        lastMeasure = measure;
+        ticksTimeMeasure = ticks;
+        lastMeasure = measureByTime;
+        measureFinished = true;
     }
 
-    if (measure >= max || lastMeasure >= max) alarm = true;
+    if (measureByStream >= CFG_ALARM_VAL /*|| lastMeasure >= max*/) alarm = true;
     else alarm = false;
 
-    uint16_t t = 0;
-    int i;
-    for (i = 0; i < DEFAULT_MEASURE_TIME; i++) {
-        t += clicksStream[i];
+    uint16_t sum = 0;
+    for (int i = 0; i < MEASURE_STREAM_SIZE; i++) {
+        sum += clicksStream[i];
     }
 
-    measure = convertCPM(t * 3);
+    measureByStream = convertCPM((uint32_t) ((float) sum * (60.0F / (float) MEASURE_STREAM_SIZE)));;
 
     if (alarm) {
-        PIN_SET(LED_PORT, LED_PIN, halfSecond);
         if (halfSecond) {
+            PIN_ON(LED_PORT, LED_PIN);
             timer1Tone(ALARM_TONE_1);
             _alarm = true;
         } else {
+            PIN_OFF(LED_PORT, LED_PIN);
             timer1Tone(ALARM_TONE_2);
             _alarm = true;
         }
     } else {
         if (_alarm) {
+            PIN_OFF(LED_PORT, LED_PIN);
             timer1off();
         }
     }
@@ -88,7 +91,7 @@ void onHalfSecond() {
 }
 
 void drawBackground() {
-    sprintf(buf, "%04u", measure);
+    sprintf(buf, "%04u", measureByStream);
     LcdGotoXYFont(1, 3);
     LcdStr(FONT_2X, buf, 6);
 
@@ -150,9 +153,8 @@ void globalInit() {
     LcdInit();
     initTimer2();
     initInterrupts();
-    LcdContrast(0x37);
-    _delay_ms(20);
     readCfg();
+    LcdContrast((byte) CFG_CONTRAST);
     sei();
 }
 
@@ -163,6 +165,11 @@ int main(void) {
         if (halfSeconds - lastRepaintTime >= IDLE_REPAINT_HALFSECONDS) {
             lastRepaintTime = halfSeconds;
             repaint();
+        }
+
+        if (measureFinished) {
+            measureFinished = false;
+            if (CFG_SOUND) beep(MEASURE_END_BEEP_FREQ);
         }
 
         if (ticksPrev != ticks) {
