@@ -5,6 +5,21 @@
 #include <stdbool.h>
 #include "defines.h"
 
+#define BYTES_VERIFY 0xB3
+
+#define DEFAULT_BEEP_FREQ 3980
+#define MEASURE_END_BEEP_FREQ 2500
+#define CFG_MEASURE_TIME_DEFAULT 20
+#define CFG_CONTRAST_DEFAULT 0x3F
+#define CFG_LED_DEFAULT true
+#define CFG_BACKLIGHT_DEFAULT false
+#define CFG_SOUND_DEFAULT true
+#define CFG_SOUND_MEASURE_DEFAULT true
+#define CFG_SOUND_DETECT_DEFAULT true
+#define CFG_ALERT_DEFAULT true
+#define CFG_ALERT_VAL_DEFAULT 200
+#define CFG_MINIMAL_GUI_DEFAULT false
+
 uint8_t CFG_MEASURE_TIME;
 uint8_t CFG_CONTRAST;
 bool CFG_LED;
@@ -17,8 +32,10 @@ uint16_t CFG_ALERT_VAL;
 bool CFG_MINIMAL_GUI;
 
 
-void readCfg();
+void readCfg(bool verify);
 
 void saveCfg();
+
+void resetCfg();
 
 #endif //__CONFIG_H_

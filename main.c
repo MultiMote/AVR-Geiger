@@ -168,7 +168,7 @@ void globalInit() {
     LcdInit();
     initTimer2();
     initInterrupts();
-    readCfg();
+    readCfg(true);
     PIN_SET(LCD_LED_PORT, LCD_LED_PIN, CFG_BACKLIGHT);
     LcdContrast((byte) CFG_CONTRAST);
     sei();
