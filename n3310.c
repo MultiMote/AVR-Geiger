@@ -28,7 +28,6 @@
 
 #include <avr/io.h>
 #include <string.h>
-#include <avr/pgmspace.h>
 #include "n3310.h"
 
 // Прототипы приватных функций драйвера
@@ -78,7 +77,7 @@ void LcdInit(void) {
 
     // Активируем SPI:
     // без прерываний, старший бит первый, режим мастера, CPOL->0, CPHA->0, Clk/4
-    SPCR = 0x50;
+    //SPCR = 0x50;
 
     // Отключаем LCD контроллер - высокий уровень на SCE
     // LCD_PORT |= _BV( LCD_CE_PIN );
@@ -212,21 +211,40 @@ static void LcdSend(byte data, LcdCmdData cd) {
     // Включаем контроллер дисплея (низкий уровень активный)
     //  LCD_PORT &= ~( _BV( LCD_CE_PIN ) );
 
-    if (cd == LCD_DATA) {
+    /*  if (cd == LCD_DATA) {
+          LCD_PORT |= _BV(LCD_DC_PIN);
+      }
+      else {
+          LCD_PORT &= ~(_BV(LCD_DC_PIN));
+      }
+
+      // Отправка данных в контроллер дисплея
+      SPDR = data;
+
+      // Ждем окончания передачи
+      while ((SPSR & 0x80) != 0x80);*/
+
+    unsigned char i;
+
+    if (cd == LCD_DATA)
         LCD_PORT |= _BV(LCD_DC_PIN);
+    else
+        LCD_PORT &= ~_BV(LCD_DC_PIN);
+
+    for (i = 0; i < 8; i++) {
+        if ((data >> (7 - i)) & 0x01)
+            LCD_PORT |= _BV(SPI_MOSI_PIN);
+        else
+            LCD_PORT &= ~_BV(SPI_MOSI_PIN);
+
+        LCD_PORT |= _BV(SPI_CLK_PIN);
+        LCD_PORT &= ~_BV(SPI_CLK_PIN);
+
     }
-    else {
-        LCD_PORT &= ~(_BV(LCD_DC_PIN));
-    }
+    LCD_PORT |= _BV(SPI_MOSI_PIN);
+    LCD_PORT |= _BV(LCD_DC_PIN);
 
-    // Отправка данных в контроллер дисплея
-    SPDR = data;
 
-    // Ждем окончания передачи
-    while ((SPSR & 0x80) != 0x80);
-
-    // Отключаем контроллер дисплея
-    //   LCD_PORT |= _BV( LCD_CE_PIN );
 }
 /*
 static void LcdSend(byte data, LcdCmdData cd)   // Sends data to display controller
@@ -319,7 +337,7 @@ byte LcdChr(LcdFontSize size, byte ch, byte margin) {
     }
     else if (ch >= 0xC0) {
         // Смещение в таблице для символов CP1251[0xC0-0xFF]
-        ch -= 96;
+        ch += 97;
     }
     else {
         // Остальные игнорируем (их просто нет в таблице для экономии памяти)
@@ -394,7 +412,7 @@ byte LcdChr(LcdFontSize size, byte ch, byte margin) {
  *                          dataArray -> массив содержащий строку которую нужно напечатать
  * Возвращаемое значение :  смотри возвращаемое значение в n3310lcd.h
  */
-byte LcdStr(LcdFontSize size, char* dataArray, byte margin) {
+byte LcdStr(LcdFontSize size, char *dataArray, byte margin) {
     byte tmpIdx = 0;
     byte response;
     while (dataArray[tmpIdx] != '\0') {
@@ -695,7 +713,7 @@ byte LCDIcon(const byte *pic, byte x, byte y, byte arrayRows, byte arrayColumns,
             if (progMem) {
                 symbolChar = (byte) pgm_read_byte(&pic[iterCol + iterRow * arrayColumns]);
             } else {
-               symbolChar = pic[iterCol + iterRow * arrayColumns];
+                symbolChar = pic[iterCol + iterRow * arrayColumns];
             }
             for (iterByte = 0; iterByte < 8; iterByte++) {
                 if ((symbolChar >> iterByte) & 1) {

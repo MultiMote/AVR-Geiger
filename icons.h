@@ -52,9 +52,16 @@ PROGMEM const unsigned char display_icon[2][9]={
         { 0x1, 0x3, 0x1, 0x3, 0x1, 0x0, 0x1, 0x1, 0x0 }
 };
 
-PROGMEM const unsigned char alarm_icon[1][7] = {
+PROGMEM const unsigned char alert_icon[1][7] = {
         {0x80, 0xfe, 0x81, 0xff, 0xff, 0xfe, 0x80}
 };
 
+PROGMEM const byte alert1_icon[1][5] = {
+        {0x6, 0x17, 0x1c, 0x17, 0x6}
+};
+
+PROGMEM const byte alert2_icon[1][1] = {
+        {0x17}
+};
 
 #endif //__ICONS_H_

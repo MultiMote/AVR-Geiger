@@ -2,10 +2,10 @@
 #define __MAIN_H_
 
 #include <avr/io.h>
-#include <avr/pgmspace.h>
 #include <avr/eeprom.h>
 #include <util/delay.h>
-#include <stdio.h>
+//#include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <avr/interrupt.h>
 
@@ -14,7 +14,8 @@
 #include "defines.h"
 #include "icons.h"
 #include "init.h"
-#include "config.h"
+#include "eep_config.h"
+#include "menu.h"
 
 
 char buf[16];
@@ -33,8 +34,8 @@ uint32_t measureByTime;
 uint32_t lastMeasure;
 uint32_t measureTimeStart;
 
-bool halfSecond;
-bool alarm;
+bool isHalfSecond;
+bool alert;
 bool _alarm;
 bool measureFinished;
 

@@ -1,3 +1,4 @@
+#include <string.h>
 #include "main.h"
 
 void beep(int freq) {
@@ -15,8 +16,8 @@ uint32_t convertCPM(uint32_t clicks) {
 // ПРЕРЫВАНИЯ
 //***********************************************************
 ISR(TIMER2_OVF_vect) {
-    halfSecond = !halfSecond;
-    if (!halfSecond) seconds++;
+    isHalfSecond = !isHalfSecond;
+    if (!isHalfSecond) seconds++;
     halfSeconds++;
     if (seconds > 59) {
         seconds = 0;
@@ -47,7 +48,7 @@ void pushToStream(uint16_t clicks) {
 
 void onHalfSecond() {
 
-    if (halfSecond) {
+    if (isHalfSecond) {
         pushToStream(ticks - ticksMeasure);
         ticksMeasure = ticks;
     }
@@ -61,8 +62,8 @@ void onHalfSecond() {
         measureFinished = true;
     }
 
-    if (measureByStream >= CFG_ALARM_VAL /*|| lastMeasure >= max*/) alarm = true;
-    else alarm = false;
+    if (measureByStream >= CFG_ALERT_VAL /*|| lastMeasure >= max*/) alert = true;
+    else alert = false;
 
     uint16_t sum = 0;
     for (int i = 0; i < MEASURE_STREAM_SIZE; i++) {
@@ -71,8 +72,8 @@ void onHalfSecond() {
 
     measureByStream = convertCPM((uint32_t) ((float) sum * (60.0F / (float) MEASURE_STREAM_SIZE)));;
 
-    if (alarm) {
-        if (halfSecond) {
+    if (CFG_ALERT && alert) {
+        if (isHalfSecond) {
             PIN_ON(LED_PORT, LED_PIN);
             timer1Tone(ALARM_TONE_1);
             _alarm = true;
@@ -91,11 +92,16 @@ void onHalfSecond() {
 }
 
 void drawBackground() {
-    sprintf(buf, "%04u", measureByStream);
+    //  sprintf(buf, "%04u", measureByStream);
+    memset(buf, 0, sizeof buf);
+    itoa(measureByStream, buf, 10);
+
     LcdGotoXYFont(1, 3);
     LcdStr(FONT_2X, buf, 6);
 
-    sprintf(buf, "%04u", lastMeasure);
+    //   sprintf(buf, "%04u", lastMeasure);
+    memset(buf, 0, sizeof buf);
+    itoa(lastMeasure, buf, 10);
     LcdGotoXYFont(8, 3);
     LcdStr(FONT_2X, buf, 6);
 
@@ -114,23 +120,32 @@ void drawForeground() {
     LCDIcon(&led_icon[0][0], 4, 3, 1, 5, true);
     LCDIcon(&speaker_icon[0][0], 16, 1, 2, 6, true);
     LCDIcon(&display_icon[0][0], 35, 1, 2, 9, true);
-    LCDIcon(&alarm_icon[0][0], 51, 3, 1, 7, true);
+    LCDIcon(&alert_icon[0][0], 51, 3, 1, 7, true);
 
     if (CFG_LED)LCDIcon(&highlight[0][0], 1, 0, 1, 11, true);  // индикатор
     if (CFG_BACKLIGHT)LCDIcon(&highlight[0][0], 32, 2, 1, 11, true); // подсветка дисплея
-    if (CFG_ALARM)LCDIcon(&highlight[0][0], 49, 0, 1, 11, true); // сигнал
+    if (CFG_ALERT)LCDIcon(&highlight[0][0], 49, 0, 1, 11, true); // сигнал
 
 
-    if (CFG_SOUND)LCDIcon(&loud[0][0], 23, 3, 1, 8, true);
-    else LCDIcon(&mute[0][0], 23, 4, 1, 4, true);
+    if (!CFG_SOUND || (!CFG_SOUND_MEASURE && !CFG_SOUND_DETECT))LCDIcon(&mute[0][0], 23, 4, 1, 4, true);
+    else LCDIcon(&loud[0][0], 23, 3, 1, 8, true);
 
 
-    uint8_t sec = halfSeconds + 1;
-    byte pos1 = (((sec - 1) / 8)) % 8;
+    if (!alert) {
+        uint8_t sec = halfSeconds + 1;
+        byte pos1 = (((sec - 1) / 8)) % 8;
 
-    LcdLine(CLOCK_CENTER_X, CLOCK_CENTER_Y, clockPosX[pos1], clockPosY[pos1], PIXEL_ON);
-    byte pos2 = sec % 8;
-    LcdLine(CLOCK_CENTER_X, CLOCK_CENTER_Y, clockPosX[pos2], clockPosY[pos2], PIXEL_ON);
+        LcdLine(CLOCK_CENTER_X, CLOCK_CENTER_Y, clockPosX[pos1], clockPosY[pos1], PIXEL_ON);
+        byte pos2 = sec % 8;
+        LcdLine(CLOCK_CENTER_X, CLOCK_CENTER_Y, clockPosX[pos2], clockPosY[pos2], PIXEL_ON);
+    } else {
+        if (seconds % 2 == 0) {
+            LCDIcon(&alert1_icon[0][0], 39, 21, 1, 5, true);
+        } else {
+            LCDIcon(&alert2_icon[0][0], 41, 21, 1, 1, true);
+        }
+    }
+
 
     LcdRect(0, 12, 83, 13, PIXEL_ON);
     LcdRect(13, 0, 14, 11, PIXEL_ON);
@@ -154,6 +169,7 @@ void globalInit() {
     initTimer2();
     initInterrupts();
     readCfg();
+    PIN_SET(LCD_LED_PORT, LCD_LED_PIN, CFG_BACKLIGHT);
     LcdContrast((byte) CFG_CONTRAST);
     sei();
 }
@@ -162,20 +178,10 @@ int main(void) {
     globalInit();
     while (1) {
 
-        if (halfSeconds - lastRepaintTime >= IDLE_REPAINT_HALFSECONDS) {
-            lastRepaintTime = halfSeconds;
-            repaint();
-        }
-
-        if (measureFinished) {
-            measureFinished = false;
-            if (CFG_SOUND) beep(MEASURE_END_BEEP_FREQ);
-        }
-
         if (ticksPrev != ticks) {
             ticksPrev = ticks;
-            if (!alarm) {
-                if (CFG_SOUND) {
+            if (!alert && !isMenuDisplayed) {
+                if (CFG_SOUND && CFG_SOUND_DETECT) {
                     if (CFG_LED) PIN_ON(LED_PORT, LED_PIN);
                     beep(DEFAULT_BEEP_FREQ);
                     if (CFG_LED) PIN_OFF(LED_PORT, LED_PIN);
@@ -185,6 +191,28 @@ int main(void) {
                     PIN_OFF(LED_PORT, LED_PIN);
                 }
             }
+        }
+
+        if (measureFinished) {
+            measureFinished = false;
+            if (CFG_SOUND && CFG_SOUND_MEASURE && !isMenuDisplayed) beep(MEASURE_END_BEEP_FREQ);
+        }
+
+        if (isMenuDisplayed) {
+            menuLoop();
+            continue;
+        }
+
+
+        if (halfSeconds - lastRepaintTime >= IDLE_REPAINT_HALFSECONDS) {
+            lastRepaintTime = halfSeconds;
+            repaint();
+        }
+
+        if (OK_PRESSED) {
+            while (OK_PRESSED) {}
+            openMenu();
+            _delay_ms(200);
         }
     }
 }
