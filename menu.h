@@ -15,6 +15,7 @@ enum e_menus {
     M_SOUND_MEASURE,
     M_SOUND_DETECT,
     M_BACKLIGHT,
+    M_CLICKS,
     M_MEASURE_TIME,
     M_CONTRAST,
     M_ALERT,

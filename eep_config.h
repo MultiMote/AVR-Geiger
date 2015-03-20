@@ -19,6 +19,8 @@
 #define CFG_ALERT_DEFAULT true
 #define CFG_ALERT_VAL_DEFAULT 200
 #define CFG_MINIMAL_GUI_DEFAULT false
+#define CFG_SOUND_CLICKS_DEFAULT false
+
 
 uint8_t CFG_MEASURE_TIME;
 uint8_t CFG_CONTRAST;
@@ -30,6 +32,7 @@ bool CFG_SOUND_DETECT;
 bool CFG_ALERT;
 uint16_t CFG_ALERT_VAL;
 bool CFG_MINIMAL_GUI;
+bool CFG_SOUND_CLICKS;
 
 
 void readCfg(bool verify);

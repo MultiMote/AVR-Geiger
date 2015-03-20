@@ -180,10 +180,16 @@ int main(void) {
 
         if (ticksPrev != ticks) {
             ticksPrev = ticks;
-            if (!alert && !isMenuDisplayed) {
+            if (!(CFG_ALERT && alert) && !isMenuDisplayed) {
                 if (CFG_SOUND && CFG_SOUND_DETECT) {
                     if (CFG_LED) PIN_ON(LED_PORT, LED_PIN);
-                    beep(DEFAULT_BEEP_FREQ);
+                    if (CFG_SOUND_CLICKS) {
+                        PIN_ON(SPEAKER_PORT, SPEAKER_PIN);
+                        _delay_ms(1);
+                        PIN_OFF(SPEAKER_PORT, SPEAKER_PIN);
+                    } else {
+                        beep(DEFAULT_BEEP_FREQ);
+                    }
                     if (CFG_LED) PIN_OFF(LED_PORT, LED_PIN);
                 } else if (CFG_LED) {
                     PIN_ON(LED_PORT, LED_PIN);

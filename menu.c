@@ -1,6 +1,6 @@
 #include "menu.h"
 
-#define ITEMS_COUNT 11
+#define ITEMS_COUNT 12
 
 
 char *menus[ITEMS_COUNT * 2] = {
@@ -10,6 +10,7 @@ char *menus[ITEMS_COUNT * 2] = {
         "гбсй хглеп.", (char *) M_SOUND_MEASURE,
         "гбсй дерейр.", (char *) M_SOUND_DETECT,
         "ондяберйю", (char *) M_BACKLIGHT,
+        "гбсй-ыеквйх", (char *) M_CLICKS,
         "бпелъ хглеп.", (char *) M_MEASURE_TIME,
         "яхцмюк", (char *) M_ALERT,
         "онпнц яхцмюкю", (char *) M_ALERT_MIN,
@@ -112,6 +113,7 @@ bool checkStat(unsigned char index) {
     if (menuNum == M_BACKLIGHT && CFG_BACKLIGHT) return true;
     if (menuNum == M_ALERT && CFG_ALERT) return true;
     if (menuNum == M_MINIMAL && CFG_MINIMAL_GUI) return true;
+    if (menuNum == M_CLICKS && CFG_SOUND_CLICKS) return true;
 
     return false;
 }
@@ -121,7 +123,7 @@ bool checkDisabled(unsigned char index) {
 
     if (menuNum == M_ALERT_MIN && !CFG_ALERT) return true;
 
-    if ((menuNum == M_SOUND_DETECT || menuNum == M_SOUND_MEASURE) && !CFG_SOUND) return true;
+    if ((menuNum == M_SOUND_DETECT || menuNum == M_SOUND_MEASURE || menuNum == M_CLICKS) && !CFG_SOUND) return true;
 
     return false;
 }
@@ -151,6 +153,9 @@ bool actionPerformed() {
             return true;
         case M_MINIMAL:
             CFG_MINIMAL_GUI = !CFG_MINIMAL_GUI;
+            return true;
+        case M_CLICKS:
+            CFG_SOUND_CLICKS = !CFG_SOUND_CLICKS;
             return true;
         default:
             break;

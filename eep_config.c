@@ -11,6 +11,7 @@ uint8_t EEMEM EEP_CFG_SOUND_DETECT = CFG_SOUND_MEASURE_DEFAULT;
 uint8_t EEMEM EEP_CFG_ALERT = CFG_ALERT_DEFAULT;
 uint16_t EEMEM EEP_CFG_ALERT_VAL = CFG_ALERT_VAL_DEFAULT;
 uint8_t EEMEM EEP_CFG_MINIMAL_GUI = CFG_MINIMAL_GUI_DEFAULT;
+uint8_t EEMEM EEP_CFG_SOUND_CLICKS = CFG_SOUND_CLICKS_DEFAULT;
 uint8_t EEMEM EEP_VERIFICATION_BYTES = BYTES_VERIFY;
 
 void readCfg(bool verify) {
@@ -30,6 +31,7 @@ void readCfg(bool verify) {
     CFG_CONTRAST = eeprom_read_byte(&EEP_CFG_CONTRAST);
     CFG_ALERT_VAL = eeprom_read_word(&EEP_CFG_ALERT_VAL);
     CFG_MINIMAL_GUI = (bool) eeprom_read_byte(&EEP_CFG_MINIMAL_GUI);
+    CFG_SOUND_CLICKS = (bool) eeprom_read_byte(&EEP_CFG_SOUND_CLICKS);
 }
 
 void saveCfg() {
@@ -43,6 +45,7 @@ void saveCfg() {
     eeprom_update_byte(&EEP_CFG_CONTRAST, CFG_CONTRAST);
     eeprom_update_word(&EEP_CFG_ALERT_VAL, CFG_ALERT_VAL);
     eeprom_update_byte(&EEP_CFG_MINIMAL_GUI, CFG_MINIMAL_GUI);
+    eeprom_update_byte(&EEP_CFG_SOUND_CLICKS, CFG_SOUND_CLICKS);
 
 }
 
@@ -58,4 +61,5 @@ void resetCfg() {
     eeprom_write_byte(&EEP_CFG_CONTRAST, CFG_CONTRAST_DEFAULT);
     eeprom_write_word(&EEP_CFG_ALERT_VAL, CFG_ALERT_VAL_DEFAULT);
     eeprom_write_byte(&EEP_CFG_MINIMAL_GUI, CFG_MINIMAL_GUI_DEFAULT);
+    eeprom_write_byte(&EEP_CFG_SOUND_CLICKS, CFG_SOUND_CLICKS_DEFAULT);
 }
