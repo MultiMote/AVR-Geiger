@@ -55,7 +55,7 @@ void onHalfSecond() {
 
     measureByTime = convertCPM((uint32_t) ((float) (ticks - ticksTimeMeasure) * (60.0F / (float) CFG_MEASURE_TIME)));
 
-    if (seconds - measureTimeStart >= DEFAULT_MEASURE_TIME) {
+    if (seconds - measureTimeStart >= CFG_MEASURE_TIME) {
         measureTimeStart = seconds;
         ticksTimeMeasure = ticks;
         lastMeasure = measureByTime;
@@ -113,8 +113,8 @@ void drawBackground() {
 }
 
 void drawForeground() {
-    LCDIcon(&resultFrame[0][0], 2, 19, 3, 45, true);
-    LCDIcon(&lastFrame[0][0], 41, 19, 3, 39, true);
+    LCDIcon(&resultFrame[0][0], 2, 19, 3, 51, true);
+    LCDIcon(&lastFrame[0][0], 36, 19, 3, 44, true);
 
 
     LCDIcon(&led_icon[0][0], 4, 3, 1, 5, true);
@@ -132,18 +132,15 @@ void drawForeground() {
 
 
     if (!alert) {
-        uint8_t sec = halfSeconds + 1;
-        byte pos1 = (((sec - 1) / 8)) % 8;
-
-        LcdLine(CLOCK_CENTER_X, CLOCK_CENTER_Y, clockPosX[pos1], clockPosY[pos1], PIXEL_ON);
-        byte pos2 = sec % 8;
-        LcdLine(CLOCK_CENTER_X, CLOCK_CENTER_Y, clockPosX[pos2], clockPosY[pos2], PIXEL_ON);
+        float progress = 1.0F / (float) CFG_MEASURE_TIME * (float) (seconds - measureTimeStart);
+        unsigned char pos = (unsigned char) ((float) TIMER_POSITIONS * progress);
+        LCDIcon(&timer_progress_icons[pos][0], 39, 21, 1, 5, true);
     } else {
-        if (seconds % 2 == 0) {
-            LCDIcon(&alert1_icon[0][0], 39, 21, 1, 5, true);
-        } else {
-            LCDIcon(&alert2_icon[0][0], 41, 21, 1, 1, true);
-        }
+//        if (seconds % 2 == 0) {
+//            LCDIcon(&alert1_icon[0][0], 39, 21, 1, 5, true);
+//        } else {
+//            LCDIcon(&alert2_icon[0][0], 41, 21, 1, 1, true);
+//        }
     }
 
 

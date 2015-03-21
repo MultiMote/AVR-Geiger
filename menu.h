@@ -29,6 +29,11 @@ bool isMenuDisplayed;
 int selected;
 int selectedSub;
 
+bool slider_visible;
+int slider_min;
+int slider_max;
+int slider_val;
+
 void openMenu();
 
 void menuLoop();
