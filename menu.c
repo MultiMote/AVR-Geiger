@@ -4,16 +4,16 @@
 
 
 char *menus[ITEMS_COUNT * 2] = {
-        "хмдхйюрнп", (char *) M_LED,
+        "ондяберйю", (char *) M_BACKLIGHT,
         "йнмрпюяр", (char *) M_CONTRAST,
+        "хмдхйюрнп", (char *) M_LED,
         "гбсй", (char *) M_SOUND,
         "гбсй хглеп.", (char *) M_SOUND_MEASURE,
         "гбсй дерейр.", (char *) M_SOUND_DETECT,
-        "ондяберйю", (char *) M_BACKLIGHT,
         "гбсй-ыеквйх", (char *) M_CLICKS,
-        "бпелъ хглеп.", (char *) M_MEASURE_TIME,
         "яхцмюк", (char *) M_ALERT,
         "онпнц яхцмюкю", (char *) M_ALERT_MIN,
+        "бпелъ хглеп.", (char *) M_MEASURE_TIME,
         "лхм. хмрепт.", (char *) M_MINIMAL,
         "яапня", (char *) M_RESET,
 };
