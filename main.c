@@ -130,21 +130,24 @@ void drawForeground() {
     if (!CFG_SOUND || (!CFG_SOUND_MEASURE && !CFG_SOUND_DETECT))LCDIcon(&mute[0][0], 23, 4, 1, 4, true);
     else LCDIcon(&loud[0][0], 23, 3, 1, 8, true);
 
+    float progress = 1.0F / (float) CFG_MEASURE_TIME * (float) (seconds - measureTimeStart);
+    unsigned char pos = (unsigned char) ((float) TIMER_POSITIONS * progress);
 
     if (!alert) {
-        float progress = 1.0F / (float) CFG_MEASURE_TIME * (float) (seconds - measureTimeStart);
-        unsigned char pos = (unsigned char) ((float) TIMER_POSITIONS * progress);
         LCDIcon(&timer_progress_icons[pos][0], 39, 21, 1, 5, true);
     } else {
-//        if (seconds % 2 == 0) {
-//            LCDIcon(&alert1_icon[0][0], 39, 21, 1, 5, true);
-//        } else {
-//            LCDIcon(&alert2_icon[0][0], 41, 21, 1, 1, true);
-//        }
+        if (seconds % 3 == 0) {
+            LCDIcon(&timer_progress_icons[pos][0], 39, 21, 1, 5, true);
+        }
+        else if (seconds % 2 == 0) {
+            LCDIcon(&alert1_icon[0][0], 39, 22, 1, 5, true);
+        } else {
+            LCDIcon(&alert2_icon[0][0], 41, 22, 1, 1, true);
+        }
     }
 
 
-    LcdRect(0, 12, 83, 13, PIXEL_ON);
+    LcdRect(0, 12, 62, 13, PIXEL_ON);
     LcdRect(13, 0, 14, 11, PIXEL_ON);
     LcdRect(28, 0, 29, 11, PIXEL_ON);
     LcdRect(46, 0, 47, 11, PIXEL_ON);

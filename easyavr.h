@@ -43,7 +43,7 @@
 //  Checks pin's value of port
 //  Returns 1 or 0
 //
-//  Example for PORTD: CHECK_PIN(PORTD, 2)
+//  Example for PD2: CHECK_PIN(PORTD, 2)
 #define CHECK_PIN(pinreg,pin) (((pinreg) & (1 << (pin))) != 0)
 
 
