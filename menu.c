@@ -183,37 +183,54 @@ bool actionPerformed(enum buttons button) {
 
     switch (menuNum) {
         case M_BACKLIGHT:
-            CFG_BACKLIGHT = !CFG_BACKLIGHT;
-            save = true;
+            if (button == B_OK) {
+                CFG_BACKLIGHT = !CFG_BACKLIGHT;
+                save = true;
+            }
             break;
         case M_SOUND:
-            CFG_SOUND = !CFG_SOUND;
-            save = true;
+            if (button == B_OK) {
+                CFG_SOUND = !CFG_SOUND;
+                save = true;
+            }
             break;
         case M_SOUND_DETECT:
-            CFG_SOUND_DETECT = !CFG_SOUND_DETECT;
-            save = true;
+            if (button == B_OK) {
+                CFG_SOUND_DETECT = !CFG_SOUND_DETECT;
+                save = true;
+            }
             break;
+
         case M_SOUND_MEASURE:
-            CFG_SOUND_MEASURE = !CFG_SOUND_MEASURE;
-            save = true;
+            if (button == B_OK) {
+                CFG_SOUND_MEASURE = !CFG_SOUND_MEASURE;
+                save = true;
+            }
             break;
         case M_LED:
-            CFG_LED = !CFG_LED;
-            save = true;
+            if (button == B_OK) {
+                CFG_LED = !CFG_LED;
+                save = true;
+            }
             break;
         case M_ALERT:
-            CFG_ALERT = !CFG_ALERT;
-            save = true;
+            if (button == B_OK) {
+                CFG_ALERT = !CFG_ALERT;
+                save = true;
+            }
             break;
         case M_MINIMAL:
-            CFG_MINIMAL_GUI = !CFG_MINIMAL_GUI;
-            save = true;
+            if (button == B_OK) {
+                CFG_MINIMAL_GUI = !CFG_MINIMAL_GUI;
+                save = true;
+            }
             break;
         case M_CLICKS:
-            CFG_SOUND_CLICKS = !CFG_SOUND_CLICKS;
-            save = true;
-            break;
+            if (button == B_OK) {
+                CFG_SOUND_CLICKS = !CFG_SOUND_CLICKS;
+                save = true;
+                break;
+            }
         case M_CONTRAST:
             if (selected_menu != M_CONTRAST && button == B_OK) {
                 selected_menu_type = MT_SLIDER;
@@ -239,13 +256,15 @@ bool actionPerformed(enum buttons button) {
             }
             break;
         case M_RESET:
-            if (selected_menu != M_RESET) {
-                selected_menu_type = MT_CONFIRM;
-            } else {
-                resetCfg();
-                readCfg(false);
-                save = true;
-                returnBack();
+            if (button == B_OK) {
+                if (selected_menu != M_RESET) {
+                    selected_menu_type = MT_CONFIRM;
+                } else {
+                    resetCfg();
+                    readCfg(false);
+                    save = true;
+                    returnBack();
+                }
             }
             break;
         default:
@@ -255,25 +274,33 @@ bool actionPerformed(enum buttons button) {
     selected_menu = (enum e_menus) menuNum;
 
     byte step = 1;
-    if (selected_menu == M_MEASURE_TIME) step = 5;
-    else if (selected_menu == M_ALERT_MIN) step = 10;
+    if (selected_menu == M_MEASURE_TIME)
+        step = 5;
+    else if (selected_menu == M_ALERT_MIN)
+        step = 20;
 
     if (selected_menu_type == MT_SLIDER) {
         if (button == B_UP) {
             if (slider_val + step < slider_max)
-                slider_val += step;
+                slider_val +=
+                        step;
         } else if (button == B_DOWN) {
             if (slider_val - step > slider_min)
-                slider_val -= step;
+                slider_val -=
+                        step;
         }
 
-        if (selected_menu == M_CONTRAST) CFG_CONTRAST = (byte) slider_val;
-        else if (selected_menu == M_MEASURE_TIME) CFG_MEASURE_TIME = (byte) slider_val;
-        else if (selected_menu == M_ALERT_MIN) CFG_ALERT_MIN = (byte) slider_val;
+        if (selected_menu == M_CONTRAST)
+            CFG_CONTRAST = (byte) slider_val;
+        else if (selected_menu == M_MEASURE_TIME)
+            CFG_MEASURE_TIME = (uint16_t) slider_val;
+        else if (selected_menu == M_ALERT_MIN)
+            CFG_ALERT_MIN = (uint16_t) slider_val;
         save = true;
     }
 
-    return save;
+    return
+            save;
 }
 
 void closeMenu() {
