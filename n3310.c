@@ -430,36 +430,13 @@ byte LcdStr(LcdFontSize size, char *dataArray, byte margin) {
 
 
 /*
- * Имя                   :  LcdFStr
- * Описание              :  Эта функция предназначена для печати строки которая хранится в Flash ROM
- * Аргумент(ы)           :  size    -> размер шрифта. Смотри enum в n3310.h
- *                          dataPtr -> указатель на строку которую нужно напечатать
- * Возвращаемое значение :  смотри возвращаемое значение в n3310lcd.h
- * Пример                :  LcdFStr(FONT_1X, PSTR("Hello World"));
- *                          LcdFStr(FONT_1X, &name_of_string_as_array);
- */
-byte LcdFStr(LcdFontSize size, const byte *dataPtr, byte margin) {
-    byte c;
-    byte response;
-    for (c = pgm_read_byte(dataPtr); c; ++dataPtr, c = pgm_read_byte(dataPtr)) {
-        // Выводим символ
-        response = LcdChr(size, c, margin);
-        if (response == OUT_OF_BORDER)
-            return OUT_OF_BORDER;
-    }
-
-    return OK;
-}
-
-
-/*
  * Имя                   :  LcdPixel
  * Описание              :  Отображает пиксель по абсолютным координатам (x,y)
  * Аргумент(ы)           :  x,y  -> абсолютные координаты пикселя
  *                          mode -> Off, On или Xor. Смотри enum в n3310.h
  * Возвращаемое значение :  смотри возвращаемое значение в n3310lcd.h
  */
-byte LcdPixel(byte x, byte y, LcdPixelMode mode) {
+byte LcdPixel(byte x, byte y) {
     int index;
     byte offset;
     byte data;
@@ -475,18 +452,7 @@ byte LcdPixel(byte x, byte y, LcdPixelMode mode) {
 
     // Обработка битов
 
-    // Режим PIXEL_OFF
-    if (mode == PIXEL_OFF) {
-        data &= (~(0x01 << offset));
-    }
-        // Режим PIXEL_ON
-    else if (mode == PIXEL_ON) {
-        data |= (0x01 << offset);
-    }
-        // Режим PIXEL_XOR
-    else if (mode == PIXEL_XOR) {
-        data ^= (0x01 << offset);
-    }
+    data |= (0x01 << offset);
 
     // Окончательный результат копируем в кэш
     LcdCache[index] = data;
@@ -512,7 +478,7 @@ byte LcdPixel(byte x, byte y, LcdPixelMode mode) {
  *                          mode    -> Off, On или Xor. Смотри enum в n3310.h
  * Возвращаемое значение :  смотри возвращаемое значение в n3310lcd.h
  */
-byte LcdLine(byte x1, byte y1, byte x2, byte y2, LcdPixelMode mode) {
+byte LcdLine(byte x1, byte y1, byte x2, byte y2) {
     int dx, dy, stepx, stepy, fraction;
     byte response;
 
@@ -545,7 +511,7 @@ byte LcdLine(byte x1, byte y1, byte x2, byte y2, LcdPixelMode mode) {
     dy <<= 1;
 
     // Рисуем начальную точку
-    response = LcdPixel(x1, y1, mode);
+    response = LcdPixel(x1, y1);
     if (response)
         return response;
 
@@ -560,7 +526,7 @@ byte LcdLine(byte x1, byte y1, byte x2, byte y2, LcdPixelMode mode) {
             x1 += stepx;
             fraction += dy;
 
-            response = LcdPixel(x1, y1, mode);
+            response = LcdPixel(x1, y1);
             if (response)
                 return response;
 
@@ -576,84 +542,9 @@ byte LcdLine(byte x1, byte y1, byte x2, byte y2, LcdPixelMode mode) {
             y1 += stepy;
             fraction += dx;
 
-            response = LcdPixel(x1, y1, mode);
+            response = LcdPixel(x1, y1);
             if (response)
                 return response;
-        }
-    }
-
-    // Установка флага изменений кэша
-    UpdateLcd = TRUE;
-    return OK;
-}
-
-
-/*
- * Имя                   :  LcdCircle
- * Описание              :  Рисует окружность (алгоритм Брезенхэма)
- * Аргумент(ы)           :  x, y   -> абсолютные координаты центра
- *                          radius -> радиус окружности
- *                          mode   -> Off, On или Xor. Смотри enum в n3310.h
- * Возвращаемое значение :  смотри возвращаемое значение в n3310lcd.h
- */
-byte LcdCircle(byte x, byte y, byte radius, LcdPixelMode mode) {
-    signed char xc = 0;
-    signed char yc = 0;
-    signed char p = 0;
-
-    if (x >= LCD_X_RES || y >= LCD_Y_RES) return OUT_OF_BORDER;
-
-    yc = radius;
-    p = 3 - (radius << 1);
-    while (xc <= yc) {
-        LcdPixel(x + xc, y + yc, mode);
-        LcdPixel(x + xc, y - yc, mode);
-        LcdPixel(x - xc, y + yc, mode);
-        LcdPixel(x - xc, y - yc, mode);
-        LcdPixel(x + yc, y + xc, mode);
-        LcdPixel(x + yc, y - xc, mode);
-        LcdPixel(x - yc, y + xc, mode);
-        LcdPixel(x - yc, y - xc, mode);
-        if (p < 0) p += (xc++ << 2) + 6;
-        else p += ((xc++ - yc--) << 2) + 10;
-    }
-
-    // Установка флага изменений кэша
-    UpdateLcd = TRUE;
-    return OK;
-}
-
-
-/*
- * Имя                   :  LcdSingleBar
- * Описание              :  Рисует один закрашенный прямоугольник
- * Аргумент(ы)           :  baseX  -> абсолютная координата x (нижний левый угол)
- *                          baseY  -> абсолютная координата y (нижний левый угол)
- *                          height -> высота (в пикселях)
- *                          width  -> ширина (в пикселях)
- *                          mode   -> Off, On или Xor. Смотри enum в n3310.h
- * Возвращаемое значение :  смотри возвращаемое значение в n3310lcd.h
- */
-byte LcdSingleBar(byte baseX, byte baseY, byte height, byte width, LcdPixelMode mode) {
-    byte tmpIdxX, tmpIdxY, tmp;
-
-    byte response;
-
-    // Проверка границ
-    if ((baseX >= LCD_X_RES) || (baseY >= LCD_Y_RES)) return OUT_OF_BORDER;
-
-    if (height > baseY)
-        tmp = 0;
-    else
-        tmp = baseY - height + 1;
-
-    // Рисование линий
-    for (tmpIdxY = tmp; tmpIdxY <= baseY; tmpIdxY++) {
-        for (tmpIdxX = baseX; tmpIdxX < (baseX + width); tmpIdxX++) {
-            response = LcdPixel(tmpIdxX, tmpIdxY, mode);
-            if (response)
-                return response;
-
         }
     }
 
@@ -673,7 +564,7 @@ byte LcdSingleBar(byte baseX, byte baseY, byte height, byte width, LcdPixelMode 
  *                          mode  -> Off, On или Xor. Смотри enum в n3310.h
  * Возвращаемое значение :  смотри возвращаемое значение в n3310lcd.h
  */
-byte LcdRect(byte x1, byte y1, byte x2, byte y2, LcdPixelMode mode) {
+byte LcdRect(byte x1, byte y1, byte x2, byte y2) {
     byte tmpIdx;
 
     // Проверка границ
@@ -683,14 +574,14 @@ byte LcdRect(byte x1, byte y1, byte x2, byte y2, LcdPixelMode mode) {
     if ((x2 > x1) && (y2 > y1)) {
         // Рисуем горизонтальные линии
         for (tmpIdx = x1; tmpIdx <= x2; tmpIdx++) {
-            LcdPixel(tmpIdx, y1, mode);
-            LcdPixel(tmpIdx, y2, mode);
+            LcdPixel(tmpIdx, y1);
+            LcdPixel(tmpIdx, y2);
         }
 
         // Рисуем вертикальные линии
         for (tmpIdx = y1; tmpIdx <= y2; tmpIdx++) {
-            LcdPixel(x1, tmpIdx, mode);
-            LcdPixel(x2, tmpIdx, mode);
+            LcdPixel(x1, tmpIdx);
+            LcdPixel(x2, tmpIdx);
         }
 
         // Установка флага изменений кэша
@@ -717,7 +608,7 @@ byte LCDIcon(const byte *pic, byte x, byte y, byte arrayRows, byte arrayColumns,
             }
             for (iterByte = 0; iterByte < 8; iterByte++) {
                 if ((symbolChar >> iterByte) & 1) {
-                    LcdPixel(picX, picY, PIXEL_ON);
+                    LcdPixel(picX, picY);
                 }
                 picY++;
             }

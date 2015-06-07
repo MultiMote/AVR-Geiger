@@ -43,7 +43,7 @@
 #define IDLE_REPAINT_HALFSECONDS 1
 
 #define MKR_H "לך׀/ק"
-#define MR_H "ל׀/ק"
+//#define MR_H "ל׀/ק"
 
 #define UP_PRESSED (!CHECK_PIN(UP_BUTTON_PINREG, UP_BUTTON_PIN))
 #define DOWN_PRESSED (!CHECK_PIN(DOWN_BUTTON_PINREG, DOWN_BUTTON_PIN))

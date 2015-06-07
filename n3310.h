@@ -62,12 +62,7 @@ typedef enum {
 
 } LcdCmdData;
 
-typedef enum {
-    PIXEL_OFF = 0,   // Погасить пиксели дисплея
-    PIXEL_ON = 1,   // Включить пиксели дисплея
-    PIXEL_XOR = 2    // Инвертировать пиксели
 
-} LcdPixelMode;
 
 typedef enum {
     FONT_1X = 1,      // Обычный размер шрифта 5x7
@@ -83,12 +78,9 @@ void LcdContrast(byte contrast);   // Установка контрастности дисплея
 byte LcdGotoXYFont(byte x, byte y);   // Установка курсора в позицию x,y
 byte LcdChr(LcdFontSize size, byte ch, byte margin);   // Вывод символа в текущей позиции
 byte LcdStr(LcdFontSize size, char* dataArray, byte margin);   // Вывод строки сохраненной в RAM
-byte LcdFStr(LcdFontSize size, const byte *dataPtr, byte margin);   // Вывод строки сохраненной в Flash ROM
-byte LcdPixel(byte x, byte y, LcdPixelMode mode);   // Точка
-byte LcdLine(byte x1, byte y1, byte x2, byte y2, LcdPixelMode mode);   // Линия
-byte LcdCircle(byte x, byte y, byte radius, LcdPixelMode mode);   // Окружность
-byte LcdRect(byte x1, byte y1, byte x2, byte y2, LcdPixelMode mode);   // Прямоугольник
-byte LcdSingleBar(byte baseX, byte baseY, byte height, byte width, LcdPixelMode mode);   // Один
+byte LcdPixel(byte x, byte y);   // Точка
+byte LcdLine(byte x1, byte y1, byte x2, byte y2);   // Линия
+byte LcdRect(byte x1, byte y1, byte x2, byte y2);   // Прямоугольник
 byte LCDIcon(const byte *pic, byte x1, byte y1, byte arrayRows, byte arrayColumns, byte progMem);
 
 

@@ -62,7 +62,7 @@ void onHalfSecond() {
         measureFinished = true;
     }
 
-    if (measureByStream >= CFG_ALERT_VAL /*|| lastMeasure >= max*/) alert = true;
+    if (measureByStream >= CFG_ALERT_MIN /*|| lastMeasure >= max*/) alert = true;
     else alert = false;
 
     uint16_t sum = 0;
@@ -93,66 +93,74 @@ void onHalfSecond() {
 
 void drawBackground() {
     //  sprintf(buf, "%04u", measureByStream);
+
+    byte shift = CFG_MINIMAL_GUI ? 1 : 0;
+
     memset(buf, 0, sizeof buf);
     itoa(measureByStream, buf, 10);
 
-    LcdGotoXYFont(1, 3);
+    LcdGotoXYFont(1, 3 - shift);
     LcdStr(FONT_2X, buf, 6);
 
     //   sprintf(buf, "%04u", lastMeasure);
     memset(buf, 0, sizeof buf);
     itoa(lastMeasure, buf, 10);
-    LcdGotoXYFont(8, 3);
+    LcdGotoXYFont(8, 3 - shift);
     LcdStr(FONT_2X, buf, 6);
 
-    LcdGotoXYFont(1, 4);
+    LcdGotoXYFont(1, 4 - shift);
     LcdStr(FONT_1X, MKR_H, DEFAULT_MARGIN);
-    LcdGotoXYFont(8, 4);
+    LcdGotoXYFont(8, 4 - shift);
     LcdStr(FONT_1X, MKR_H, DEFAULT_MARGIN);
 
 }
 
 void drawForeground() {
-    LCDIcon(&resultFrame[0][0], 2, 19, 3, 51, true);
-    LCDIcon(&lastFrame[0][0], 36, 19, 3, 44, true);
+    if (!CFG_MINIMAL_GUI) {
+        LCDIcon(&resultFrame[0][0], 2, 19, 3, 51, true); // рамка непрерывного измерения
+        LCDIcon(&lastFrame[0][0], 36, 19, 3, 44, true); // рамка измерения по таймеру
 
 
-    LCDIcon(&led_icon[0][0], 4, 3, 1, 5, true);
-    LCDIcon(&speaker_icon[0][0], 16, 1, 2, 6, true);
-    LCDIcon(&display_icon[0][0], 35, 1, 2, 9, true);
-    LCDIcon(&alert_icon[0][0], 51, 3, 1, 7, true);
+        LCDIcon(&led_icon[0][0], 4, 3, 1, 5, true); // индикатор
+        LCDIcon(&speaker_icon[0][0], 16, 1, 2, 6, true); // звук
+        LCDIcon(&display_icon[0][0], 35, 1, 2, 9, true); // подсветка
+        LCDIcon(&alert_icon[0][0], 51, 3, 1, 7, true); // сигнал
 
-    if (CFG_LED)LCDIcon(&highlight[0][0], 1, 0, 1, 11, true);  // индикатор
-    if (CFG_BACKLIGHT)LCDIcon(&highlight[0][0], 32, 2, 1, 11, true); // подсветка дисплея
-    if (CFG_ALERT)LCDIcon(&highlight[0][0], 49, 0, 1, 11, true); // сигнал
+        if (CFG_LED)LCDIcon(&highlight[0][0], 1, 0, 1, 11, true);  // индикатор
+        if (CFG_BACKLIGHT)LCDIcon(&highlight[0][0], 32, 2, 1, 11, true); // подсветка дисплея
+        if (CFG_ALERT)LCDIcon(&highlight[0][0], 49, 0, 1, 11, true); // сигнал
 
 
-    if (!CFG_SOUND || (!CFG_SOUND_MEASURE && !CFG_SOUND_DETECT))LCDIcon(&mute[0][0], 23, 4, 1, 4, true);
-    else LCDIcon(&loud[0][0], 23, 3, 1, 8, true);
+        if (!CFG_SOUND || (!CFG_SOUND_MEASURE && !CFG_SOUND_DETECT))LCDIcon(&mute[0][0], 23, 4, 1, 4, true);
+        else LCDIcon(&loud[0][0], 23, 3, 1, 8, true);
+
+    }
 
     float progress = 1.0F / (float) CFG_MEASURE_TIME * (float) (seconds - measureTimeStart);
     unsigned char pos = (unsigned char) ((float) TIMER_POSITIONS * progress);
 
-    if (!alert) {
-        LCDIcon(&timer_progress_icons[pos][0], 39, 21, 1, 5, true);
-    } else {
-        if (seconds % 3 == 0) {
+    if (!CFG_MINIMAL_GUI) {
+        if (!alert) {
             LCDIcon(&timer_progress_icons[pos][0], 39, 21, 1, 5, true);
-        }
-        else if (seconds % 2 == 0) {
-            LCDIcon(&alert1_icon[0][0], 39, 22, 1, 5, true);
         } else {
-            LCDIcon(&alert2_icon[0][0], 41, 22, 1, 1, true);
+            if (seconds % 3 == 0) {
+                LCDIcon(&timer_progress_icons[pos][0], 39, 21, 1, 5, true);
+            }
+            else if (seconds % 2 == 0) {
+                LCDIcon(&alert1_icon[0][0], 39, 22, 1, 5, true);
+            } else {
+                LCDIcon(&alert2_icon[0][0], 41, 22, 1, 1, true);
+            }
         }
+
+        LcdRect(0, 12, 62, 13);
+        LcdRect(13, 0, 14, 11);
+        LcdRect(28, 0, 29, 11);
+        LcdRect(46, 0, 47, 11);
+        LcdRect(61, 0, 62, 11);
+    } else {
+        LcdLine(40, 0, 40, LCD_Y_RES);
     }
-
-
-    LcdRect(0, 12, 62, 13, PIXEL_ON);
-    LcdRect(13, 0, 14, 11, PIXEL_ON);
-    LcdRect(28, 0, 29, 11, PIXEL_ON);
-    LcdRect(46, 0, 47, 11, PIXEL_ON);
-    LcdRect(61, 0, 62, 11, PIXEL_ON);
-
 }
 
 void repaint() {
@@ -216,7 +224,7 @@ int main(void) {
         }
 
         if (OK_PRESSED) {
-            while (OK_PRESSED) {}
+            while (OK_PRESSED) { }
             openMenu();
             _delay_ms(200);
         }
